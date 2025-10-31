@@ -18,15 +18,15 @@ const ai = new GoogleGenAI({ apiKey: API_KEY! });
 app.post('/api/chat', async (c) => {
   try {
     const body = await c.req.json();
-    const prompt = body.prompt || '';
+    const contents = body.contents || [];
     const systemInstruction = body.systemInstruction || undefined;
 
-    if (!prompt) return c.text('No prompt provided', 400)
+    if (!contents.length) return c.text('No contents provided', 400)
 
     // Streaming 呼び出し
     const result = await ai.models.generateContentStream({
       model: MODEL_NAME,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents,
       config: {
         systemInstruction,
       },

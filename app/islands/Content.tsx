@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "hono/jsx";
 
 export default function Content() {
   const [messages, setMessages] = useState<
-    { role: "user" | "assistant"; text: string }[]
+    { role: "user" | "model"; text: string }[]
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,38 +75,42 @@ export default function Content() {
     setLoading(true);
     setTextInput("");
     setError(null);
-    setMessages((m) => [...m, { role: "user", text: prompt }]);
+    const _messages = [...messages, { role: "user", text: prompt }] as {
+      role: "user" | "model";
+      text: string;
+    }[];
+    setMessages(_messages);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemInstruction: systemInstruction === "" ? undefined : systemInstruction }),
+        body: JSON.stringify({ contents: _messages, systemInstruction: systemInstruction === "" ? undefined : systemInstruction }),
       });
 
       if (!res.ok || !res.body) throw new Error("Upstream error");
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let assistantText = "";
+      let modelText = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        assistantText += chunk;
+        modelText += chunk;
         outputRef.current?.scrollTo(0, outputRef.current.scrollHeight);
 
         setMessages((m) => {
           const copy = [...m];
           const last = copy[copy.length - 1];
-          if (last && last.role === "assistant") {
+          if (last && last.role === "model") {
             copy[copy.length - 1] = {
-              role: "assistant",
-              text: assistantText,
+              role: "model",
+              text: modelText,
             };
           } else {
-            copy.push({ role: "assistant", text: assistantText });
+            copy.push({ role: "model", text: modelText });
           }
           return copy;
         });
