@@ -8,12 +8,20 @@ export default function Content() {
   const [error, setError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const [transcriptPreview, setTranscriptPreview] = useState("");
+  const [systemInstruction, setSystemInstruction] = useState("");
   const [textInput, setTextInput] = useState("");
   const recognitionRef = useRef<any>(null);
   const outputRef = useRef<HTMLDivElement>(null);
 
+  // URLクエリから systemInstruction を受け取る
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const si = params.get("systemInstruction");
+    if (si) setSystemInstruction(si);
+  }, []);
 
+  useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
@@ -73,7 +81,7 @@ export default function Content() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, systemInstruction: systemInstruction === "" ? undefined : systemInstruction }),
       });
 
       if (!res.ok || !res.body) throw new Error("Upstream error");
@@ -113,11 +121,17 @@ export default function Content() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-800">
-      <div className="flex items-center mb-1">
+      <div className="flex items-center mb-1 px-1 border-gray-600 border">
         <button
           onClick={() => setMessages([])}
           className="px-3 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm m-1 cursor-pointer"
         >会話履歴を削除</button>
+        <textarea
+          value={systemInstruction}
+          onChange={(e) => setSystemInstruction((e.target! as HTMLInputElement).value)}
+          placeholder="システム指示を入力..."
+          className="flex-1 min-h-9 h-9 px-3 py-1 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
 
       </div>
 

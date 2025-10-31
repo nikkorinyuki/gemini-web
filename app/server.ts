@@ -15,12 +15,11 @@ if (!API_KEY) { console.error('GEMINI_API_KEY is not set') }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
-app.get('/', (c) => c.text('Hono + Gemini streaming proxy (official SDK)'))
-
 app.post('/api/chat', async (c) => {
   try {
     const body = await c.req.json();
-    const prompt = body.prompt || ''
+    const prompt = body.prompt || '';
+    const systemInstruction = body.systemInstruction || undefined;
 
     if (!prompt) return c.text('No prompt provided', 400)
 
@@ -28,7 +27,9 @@ app.post('/api/chat', async (c) => {
     const result = await ai.models.generateContentStream({
       model: MODEL_NAME,
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-
+      config: {
+        systemInstruction,
+      },
     })
 
     return stream(c, async (streamWriter) => {
