@@ -8,10 +8,8 @@ const app = createApp()
 
 showRoutes(app)
 
-const API_KEY = process.env.VITE_GEMINI_API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY;
 const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
-
-console.log(process.env)
 
 if (!API_KEY) { console.error('GEMINI_API_KEY is not set') }
 

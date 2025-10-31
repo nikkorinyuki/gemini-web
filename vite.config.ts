@@ -2,11 +2,12 @@ import build from '@hono/vite-build/cloudflare-workers'
 import adapter from '@hono/vite-dev-server/cloudflare'
 import tailwindcss from '@tailwindcss/vite'
 import honox from 'honox/vite'
+import path from "path"
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  ssr:{
-    external: ['@google/genai',"dotenv/config"]
+  ssr: {
+    external: ['@google/genai', "dotenv/config"]
   },
   plugins: [
     honox({
@@ -15,5 +16,10 @@ export default defineConfig({
     }),
     tailwindcss(),
     build()
-  ]
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
