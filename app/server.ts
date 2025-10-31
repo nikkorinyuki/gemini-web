@@ -29,6 +29,7 @@ app.post('/api/chat', async (c) => {
       contents,
       config: {
         systemInstruction,
+        tools: [{ googleSearch: {} }]
       },
     })
 
